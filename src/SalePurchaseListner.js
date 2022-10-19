@@ -1,5 +1,6 @@
 
 const Web3 = require("web3");
+const express = require("express");
 const { MongoClient } = require("mongodb");
 require("dotenv").config();
 
@@ -14,7 +15,37 @@ const dexContract = new web3.eth.Contract(ABI, Address);
 const uri = "mongodb+srv://0xrittikpradhan:s3ni79lQcElpJS4v@cluster0.fuglox2.mongodb.net/?retryWrites=true&w=majority";
 const client = new MongoClient(uri);
 
-//
+const port = process.env.PORT || 3000;
+const app = express();
+
+//API to get BuySell History 
+
+app.get("/getBuySellHistory/:address", async (req, res) => {
+    if(req.params.address) {
+        const address = req.params.address;
+        const data = await getAddressHistory(client, address);
+        return res.send(data);
+    }
+});
+
+async function getAddressHistory(client, address) {
+    const arr = []
+    const cursor = await client.db("SalePurchase").collection("OwnerHistory").find({ownerAddress : address});
+
+    if(await cursor.hasNext()) {
+        cursor.forEach(element => {
+            arr.push({"eventName" : element.eventName, 
+                "user " : element.ownerAddress, 
+                "txHash" : element.txHash, 
+                "blockNumber" : element.blockNumber, 
+                "eventDate" : element.eventDate});
+        });
+    }
+    return arr;
+}
+
+
+//EventListner
 
 dexContract.events.BuyNFT(
 
@@ -70,4 +101,8 @@ async function createListing(client, event) {
         console.log("Hash Already Exists.");
     }
 }
+
+app.listen(port, () => {
+    console.log("Server is live on: " + port);
+});
 
