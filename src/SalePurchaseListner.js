@@ -19,7 +19,12 @@ const client = new MongoClient(uri);
 dexContract.events.BuyNFT(
 
     (error, event) => {
-        console.log(event);
+        try {
+            createListing(client, event);
+        }
+        catch (e) {
+            console.error(e);
+        }  
     }
 )
 .on("connected", (subscriptionId) => {
@@ -30,10 +35,39 @@ dexContract.events.BuyNFT(
 dexContract.events.SellNFT(
 
     (error, event) => {
-        console.log(event);
+        try {
+            createListing(client, event);
+        }
+        catch (e) {
+            console.error(e);
+        }  
     }
 )
 .on("connected", (subscriptionId) => {
     console.log({ subscriptionId });
 });
+
+async function createListing(client, event) {
+    client.connect();
+    const eventDetails = {
+        txHash : event.transactionHash,
+        blockNumber : event.blockNumber.toString(),
+        ownerAddress : event.returnValues.owner,
+        tokenId : event.returnValues.tokenId,
+        eventName : event.event,
+        eventDate : new Date(Date.now()).toLocaleString()
+    }
+    console.log(eventDetails);
+    const checkDuplicateTxHash = await client.db("SalePurchase").collection("OwnerHistory").findOne({
+        txHash : eventDetails.txHash
+    });
+
+    if(checkDuplicateTxHash === null) {
+        const result = await client.db("SalePurchase").collection("OwnerHistory").insertOne(eventDetails);
+        console.log(`New Listing created with following Id: ${result.insertedId}`);
+    }
+    else {
+        console.log("Hash Already Exists.");
+    }
+}
 
