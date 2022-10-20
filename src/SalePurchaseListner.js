@@ -7,7 +7,7 @@ require("dotenv").config();
 const ALCHEMY_PROVIDER = `${process.env.url}`;
 const web3 = new Web3(new Web3.providers.WebsocketProvider(ALCHEMY_PROVIDER));
 
-const Address = "0x4838c7eB52eDf90489DEB5e86ECfc16bF4797E9D";
+const Address = "0xDfB98072A198c86209436733A7d7AEaF4e4bBa53";
 const ABI = require("../build/ABI.json");
 
 const dexContract = new web3.eth.Contract(ABI, Address);
@@ -39,15 +39,11 @@ async function getAddressHistory(client, address) {
                 "txHash" : element.txHash, 
                 "tokenId" : element.tokenId,
                 "blockNumber" : element.blockNumber, 
-                "eventDate" : element.eventDate});
-
-            if(element.eventDate == 1666178185407)
-                console.log(element.eventDate.toLocaleString());
+                "eventTimestamp" : element.eventTimestamp});
         });
     }
     return arr;
 }
-
 
 //EventListner
 
@@ -92,7 +88,7 @@ async function createListing(client, event) {
         eventName : event.event,
         eventTimestamp : + new Date()/1000 //seconds
     }
-    console.log(eventDetails);
+    // console.log(eventDetails);
     const checkDuplicateTxHash = await client.db("SalePurchase").collection("OwnerHistory").findOne({
         txHash : eventDetails.txHash
     });
@@ -107,6 +103,6 @@ async function createListing(client, event) {
 }
 
 app.listen(port, () => {
-    console.log("Server is live on: " + port);
+    console.log("Server is live on : " + port);
 });
 
