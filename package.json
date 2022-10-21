@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start" : "node src/SalePurchaseListner.js",
-    "dev" : "nodemon src/SalePurchaseListner.js"
+    "start": "node src/SalePurchaseListner.js",
+    "dev": "nodemon src/SalePurchaseListner.js"
   },
   "keywords": [],
   "author": "",
